@@ -1052,6 +1052,9 @@ static boolean FileIsDemoLump(const char *filename)
             case 221: // MBF21
                 p += 6; // skip signature
                 break;
+            case 227: // MBF2y
+                p += 6; //skip signature
+                break;
             default:
                 return false;
                 break;

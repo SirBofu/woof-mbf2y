@@ -3927,6 +3927,8 @@ demo_version_t G_GetNamedComplevel(const char *arg)
         {"21",       DV_MBF21,   exe_indetermined},
         {"id24",     DV_ID24,    exe_indetermined},
         {"24",       DV_ID24,    exe_indetermined},
+        {"mbf27",    DV_MBF2Y,   exe_indetermined},
+        {"27",       DV_MBF2Y,   exe_indetermined},
     };
 
     for (int i = 0; i < arrlen(named_complevel); i++)
@@ -3956,6 +3958,7 @@ static struct
     {DV_MBF,     CL_MBF    },
     {DV_MBF21,   CL_MBF21  },
     {DV_ID24,    CL_ID24   },
+    {DV_MBF2Y,   CL_MBF2Y  },
 };
 
 static complevel_t GetComplevel(demo_version_t demover)
@@ -3998,6 +4001,8 @@ const char *G_GetCurrentComplevelName(void)
             return "MBF21";
         case DV_ID24:
             return "ID24";
+        case DV_MBF2Y:
+            return "MBF27";
         default:
             return "Unknown";
     }
@@ -4067,6 +4072,10 @@ static demo_version_t GetWadDemover(void)
     {
         return DV_ID24;
     }
+    else if (length == 5 && !strncasecmp("mbf27", data, 5))
+    {
+        return DV_MBF2Y;
+    }
 
     return DV_NONE;
 }
@@ -4102,6 +4111,22 @@ static void G_MBF21Defaults(void)
   comp[comp_friendlyspawn] = 1;
   comp[comp_voodooscroller] = 0;
   comp[comp_reservedlineflag] = 1;
+  comp[comp_noelastic] = 0;
+}
+
+static void G_MBF2YDefaults(void)
+{
+  G_MBFDefaults();
+
+  comp[comp_pursuit] = 1;
+
+  comp[comp_respawn] = 0;
+  comp[comp_soul] = 0;
+  comp[comp_ledgeblock] = 1;
+  comp[comp_friendlyspawn] = 1;
+  comp[comp_voodooscroller] = 0;
+  comp[comp_reservedlineflag] = 1;
+  comp[comp_noelastic] = 1;
 }
 
 static void G_MBFComp()
@@ -4112,6 +4137,7 @@ static void G_MBFComp()
   comp[comp_friendlyspawn] = 1;
   comp[comp_voodooscroller] = 1;
   comp[comp_reservedlineflag] = 0;
+  comp[comp_noelastic] = 0;
 }
 
 static void G_BoomComp()
@@ -4131,6 +4157,7 @@ static void G_BoomComp()
   comp[comp_friendlyspawn] = 1;
   comp[comp_voodooscroller] = 0;
   comp[comp_reservedlineflag] = 0;
+  comp[comp_noelastic] = 0;
 }
 
 static void CheckDemoParams(boolean specified_complevel)
@@ -4314,6 +4341,8 @@ void G_ReloadDefaults(boolean keep_demover)
       G_MBFDefaults();
     else if (mbf21)
       G_MBF21Defaults();
+    else if (mbf2y)
+      G_MBF2YDefaults();
   }
 
   D_SetMaxHealth();
@@ -4322,7 +4351,7 @@ void G_ReloadDefaults(boolean keep_demover)
 
   R_InvulMode();
 
-  if (!mbf21)
+  if (!mbf21 && !mbf2y)
   {
     // Set new compatibility options
     G_MBFComp();
@@ -4374,7 +4403,7 @@ void G_ReloadDefaults(boolean keep_demover)
       G_BoomComp();
     }
   }
-  else if (mbf21)
+  else if (mbf21 || mbf2y)
   {
     // These are not configurable
     variable_friction = 1;
@@ -4592,13 +4621,13 @@ void G_RecordDemo(const char *name)
 // Lee Killough 3/1/98
 
 static int G_GameOptionSize(void) {
-  return mbf21 ? MBF21_GAME_OPTION_SIZE : GAME_OPTION_SIZE;
+  return mbf21 ? MBF2Y_GAME_OPTION_SIZE : GAME_OPTION_SIZE;
 }
 
 static byte* G_WriteOptionsMBF21(byte* demo_p)
 {
   int i;
-  byte *target = demo_p + MBF21_GAME_OPTION_SIZE;
+  byte *target = demo_p + MBF2Y_GAME_OPTION_SIZE;
 
   *demo_p++ = monsters_remember;
   *demo_p++ = weapon_recoil;
@@ -4626,13 +4655,13 @@ static byte* G_WriteOptionsMBF21(byte* demo_p)
   *demo_p++ = dog_jumping;
   *demo_p++ = monkeys;
 
-  *demo_p++ = MBF21_COMP_TOTAL;
+  *demo_p++ = MBF2Y_COMP_TOTAL;
 
-  for (i = 0; i < MBF21_COMP_TOTAL; i++)
+  for (i = 0; i < MBF2Y_COMP_TOTAL; i++)
     *demo_p++ = comp[i] != 0;
 
   if (demo_p != target)
-    I_Error("MBF21_GAME_OPTION_SIZE is too small");
+    I_Error("MBF2Y_GAME_OPTION_SIZE is too small");
 
   return demo_p;
 }
@@ -4823,19 +4852,23 @@ byte *G_ReadOptionsMBF21(byte *demo_p)
 
   count = *demo_p++;
 
-  if (count > MBF21_COMP_TOTAL)
+  if (count > MBF2Y_COMP_TOTAL)
     I_Error("Encountered unknown mbf21 compatibility options!");
 
   for (i = 0; i < count; i++)
     comp[i] = *demo_p++;
 
   // comp_voodooscroller
-  if (count < MBF21_COMP_TOTAL - 2)
+  if (count < MBF2Y_COMP_TOTAL - 3)
     comp[comp_voodooscroller] = 1;
 
   // comp_reservedlineflag
-  if (count < MBF21_COMP_TOTAL - 1)
+  if (count < MBF2Y_COMP_TOTAL - 2)
     comp[comp_reservedlineflag] = 0;
+
+  // comp_norelastic
+  if (count < MBF2Y_COMP_TOTAL -1)
+    comp[comp_noelastic] = 0;
 
   return demo_p;
 }
@@ -5517,8 +5550,8 @@ void G_BindEnemVariables(void)
 void G_BindCompVariables(void)
 {
   M_BindNum("default_complevel", &default_complevel, NULL,
-            CL_MBF21, CL_VANILLA, CL_MBF21, ss_comp, wad_no,
-            "Default compatibility level (0 = Vanilla; 1 = Boom; 2 = MBF; 3 = MBF21)");
+            CL_MBF2Y, CL_VANILLA, CL_MBF2Y, ss_comp, wad_no,
+            "Default compatibility level (0 = Vanilla; 1 = Boom; 2 = MBF; 3 = MBF21; 4 = MBF27)");
   M_BindBool("autostrafe50", &autostrafe50, NULL, false, ss_comp, wad_no,
              "Automatic strafe50 (SR50)");
   M_BindBool("hangsolid", &hangsolid, NULL, false, ss_comp, wad_no,
@@ -5556,6 +5589,7 @@ void G_BindCompVariables(void)
   BIND_COMP(comp_friendlyspawn, 1, "Things spawned by A_Spawn inherit friendliness of spawner");
   BIND_COMP(comp_voodooscroller, 0, "Voodoo dolls on slow scrollers move too slowly");
   BIND_COMP(comp_reservedlineflag, 1, "ML_RESERVED clears extended flags");
+  BIND_COMP(comp_noelastic, 0, "Disable elastic collisions for players");
 
 #define BIND_EMU(id, v, help) \
   M_BindBool(#id, &overflow[(id)].enabled, NULL, (v), ss_none, wad_no, help)

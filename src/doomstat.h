@@ -108,6 +108,7 @@ typedef enum {
   DV_MBF     = 203,
   DV_MBF21   = 221,
   DV_ID24    = 224, // (2025-03-20) COMPATIBILITY NOT YET STABLE
+  DV_MBF2Y   = 227, // (2026-09-11) COMPATIBILITY NOT YET STABLE
   DV_UM      = 255,
 } demo_version_t;
 
@@ -119,6 +120,7 @@ extern demo_version_t demo_version;           // killough 7/19/98: Version of de
 #define demo_compatibility (demo_version < DV_BOOM200) /* killough 11/98: macroized */
 
 #define mbf21 (demo_version >= DV_MBF21)
+#define mbf2y (demo_version >= DV_MBF2Y)
 
 // killough 7/19/98: whether monsters should fight against each other
 extern boolean monster_infighting, default_monster_infighting;
@@ -166,7 +168,11 @@ enum {
   comp_voodooscroller,
   comp_reservedlineflag,
 
-  MBF21_COMP_TOTAL,
+  // mbf2y
+
+  comp_noelastic,
+
+  MBF2Y_COMP_TOTAL,
 
   COMP_TOTAL=32  // Some extra room for additional variables
 };

@@ -32,7 +32,7 @@ struct event_s;
 // killough 5/2/98: number of bytes reserved for saving options
 #define GAME_OPTION_SIZE 64
 
-#define MBF21_GAME_OPTION_SIZE (21 + MBF21_COMP_TOTAL)
+#define MBF2Y_GAME_OPTION_SIZE (21 + MBF2Y_COMP_TOTAL)
 
 void G_UpdateLocalViewFunction(void);
 void G_PrepMouseTiccmd(void);
@@ -103,6 +103,7 @@ typedef enum
   CL_MBF,
   CL_MBF21,
   CL_ID24,
+  CL_MBF2Y,
 } complevel_t;
 
 extern complevel_t force_complevel, default_complevel;

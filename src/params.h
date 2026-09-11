@@ -137,6 +137,7 @@ Demo options: \n\
 Compatibility: \n\
   -cl <version>         Alias to -complevel.\n\
   -complevel <version>  Emulate a specific version of Doom/Boom/MBF. Valid\n\
-                        values are \"vanilla\", \"boom\", \"mbf\", \"mbf21\".\n\
+                        values are \"vanilla\", \"boom\", \"mbf\", \"mbf21\",\n\
+                        and \"mbf27\".\n\
 \n\
 See CMDLINE.txt for a complete list of supported command line options.\n"

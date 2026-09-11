@@ -1205,6 +1205,21 @@ static void P_HitSlideLine(line_t *ld)
       return;
     }
 
+  if (comp[comp_noelastic]) // MBF2y - we bypass R_PointToAngle2 and instead calculate the vector ourselves
+  {
+    fixed_t l_dx = ld->dx;
+    fixed_t l_dy = ld->dy;
+    fixed_t l_length = P_AproxDistance (l_dx, l_dy);
+    if (l_length > 0)
+    {
+      fixed_t wallmove = FixedDiv(FixedMul(tmxmove, l_dx) + FixedMul(tmymove, l_dy), l_length);
+
+      tmxmove = FixedDiv(FixedMul(wallmove, l_dx), l_length);
+      tmymove = FixedDiv(FixedMul(wallmove, l_dy), l_length);
+    }
+    return;
+  }
+
   // The wall is angled. Bounce if the angle of approach is  // phares
   // less than 45 degrees.
 
@@ -1266,7 +1281,7 @@ static boolean PTR_SlideTraverse(intercept_t *in)
 
   li = in->d.line;
 
-  if (!(li->flags & ML_TWOSIDED))
+  if (!(li->flags & (ML_TWOSIDED)))
     {
       if (P_PointOnLineSide (slidemo->x, slidemo->y, li))
 	return true; // don't hit the back side
@@ -1277,6 +1292,20 @@ static boolean PTR_SlideTraverse(intercept_t *in)
   // These define a 'window' from one sector to another across a line
 
   P_LineOpening(li);
+
+  // MBF2Y comp_noelastic: make things able to slide along blocking two-sided linedefs
+
+  if (comp[comp_noelastic] && li->flags & (ML_BLOCKING))
+    goto isblocking;  // MBF2y: is a blocking twosided linedef
+
+  if (comp[comp_noelastic] && (slidemo->player) && li->flags & (ML_BLOCKPLAYERS))
+    goto isblocking;
+
+  if (comp[comp_noelastic] && !(slidemo->player) && (slidemo->flags & (MF_COUNTKILL) || slidemo->type == MT_SKULL) && !(slidemo->flags & (MF_FRIEND)) && li->flags & (ML_BLOCKMONSTERS))
+    goto isblocking;
+
+  if (comp[comp_noelastic] && !(slidemo->player) && (slidemo->flags & (MF_COUNTKILL) || slidemo->type == MT_SKULL) && !(slidemo->flags & (MF_NOGRAVITY) || slidemo->flags & (MF_FRIEND)) && li->flags & (ML_BLOCKLANDMONSTERS))
+    goto isblocking;
 
   if (openrange < slidemo->height)
     goto isblocking;  // doesn't fit
