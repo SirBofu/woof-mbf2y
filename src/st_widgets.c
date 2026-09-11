@@ -188,6 +188,12 @@ static void UpdateAnnounceMessage(sbe_widget_t *widget, player_t *player)
     }
 }
 
+void ST_ResetMessages(void)
+{
+    message_duration_left = 0;
+    announce_duration_left = 0;
+}
+
 // key tables
 // jff 5/10/98 french support removed, 
 // as it was not being used and couldn't be easily tested
@@ -546,11 +552,8 @@ static void UpdateChat(sbe_widget_t *widget)
     if (chat_on)
     {
         M_StringCopy(string, chatline.string, sizeof(string));
-
-        if (leveltime & 16)
-        {
-            M_StringConcat(string, "_", sizeof(string));
-        }
+        // make sure active chat line is at least one char wide
+        M_StringConcat(string, (leveltime & 16) ? "_" : " ", sizeof(string));
         ST_AddLine(widget, string);
     }
 }
@@ -1082,7 +1085,7 @@ static void ForceCenterMessage(sbarelem_t *elem)
     static sbaralignment_t default_alignment;
     if (!st_msg_elem)
     {
-        default_alignment = elem->alignment;
+        default_alignment = elem->orig_alignment;
         st_msg_elem = elem;
     }
 

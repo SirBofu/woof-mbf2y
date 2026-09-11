@@ -873,6 +873,20 @@ static void AM_maxOutWindowScale(void)
 //
 // Passed an input event, returns true if its handled
 //
+
+void AM_EnableFullAutomap(boolean enable)
+{
+  if (enable)
+  {
+      minimap.active = false;
+      AM_Start ();
+      SwapScale();
+      viewactive = false;
+      am_refresh_background = true;
+      st_refresh_background = true;
+  }
+}
+
 boolean AM_Responder
 ( event_t*  ev )
 {
@@ -902,12 +916,7 @@ boolean AM_Responder
   {
     if (M_InputActivated(input_map) && !WS_Override())
     {
-      minimap.active = false;
-      AM_Start ();
-      SwapScale();
-      viewactive = false;
-      am_refresh_background = true;
-      st_refresh_background = true;
+      AM_EnableFullAutomap(true);
       rc = true;
     }
   }
@@ -2012,10 +2021,13 @@ static amls_t LineStyle(line_t *line)
 
 static int ColorForStyle(line_t *line, amls_t style)
 {
+    const boolean blinking =
+        (map_keyed_door == MAP_KEYED_DOOR_FLASH) && (leveltime & 16);
+
     switch (style)
     {
         case amls_Locked:
-            if ((map_keyed_door == MAP_KEYED_DOOR_FLASH) && (leveltime & 16))
+            if (blinking)
             {
                 return cur_mapcolor_grid;
                 break;
@@ -2038,7 +2050,7 @@ static int ColorForStyle(line_t *line, amls_t style)
             }
 
         case amls_IntraTeleport:
-            return cur_mapcolor_exit;
+            return cur_mapcolor_tele;
             break;
 
         case amls_OneSided:
@@ -2055,7 +2067,7 @@ static int ColorForStyle(line_t *line, amls_t style)
             break;
 
         case amls_InterTeleport:
-            return cur_mapcolor_tele;
+            return (blinking) ? cur_mapcolor_grid : cur_mapcolor_exit;
             break;
 
         case amls_ClosedDoor:

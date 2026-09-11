@@ -392,7 +392,7 @@ enum
     str_death_use_action,
     str_widescreen,
     str_bobbing_pct,
-    str_screen_melt,
+    str_screen_wipe,
     str_palette_changes,
     str_invul_mode,
     str_skill,
@@ -1194,7 +1194,7 @@ static void DrawGyroCalibration(void)
             I_UpdateGyroCalibrationState();
             if (I_GetGyroCalibrationState() == GYRO_CALIBRATION_ACTIVE)
             {
-                M_StartSound(sfx_pstop);
+                M_StartSound(sfx_mnumov);
             }
             break;
 
@@ -1203,7 +1203,7 @@ static void DrawGyroCalibration(void)
             I_UpdateGyroCalibrationState();
             if (I_GetGyroCalibrationState() == GYRO_CALIBRATION_COMPLETE)
             {
-                M_StartSound(sfx_pstop);
+                M_StartSound(sfx_mnumov);
             }
             break;
 
@@ -1212,7 +1212,7 @@ static void DrawGyroCalibration(void)
             I_UpdateGyroCalibrationState();
             if (I_GetGyroCalibrationState() == GYRO_CALIBRATION_INACTIVE)
             {
-                M_StartSound(sfx_swtchx);
+                M_StartSound(sfx_mnucls);
                 block_input = false;
             }
             break;
@@ -3361,7 +3361,7 @@ static setup_menu_t gen_settings5[] = {
 static const char *death_use_action_strings[] = {"default", "last save",
                                                  "nothing"};
 
-static const char *screen_melt_strings[] = {"Off", "Melt", "Crossfade", "Fizzle"};
+static const char *screen_wipe_strings[] = {"Off", "Melt", "Crossfade", "Fizzle"};
 
 static const char *palette_changes_strings[] = {"Off", "On", "Reduced"};
 
@@ -3374,7 +3374,7 @@ static setup_menu_t gen_settings6[] = {
     {"Quality of life", S_SKIP | S_TITLE, OFF_CNTR_X, M_SPC},
 
     {"Screen wipe effect", S_CHOICE | S_STRICT, OFF_CNTR_X, M_SPC,
-     {"screen_melt"}, .strings_id = str_screen_melt},
+     {"screen_melt"}, .strings_id = str_screen_wipe},
 
     {"Pain/Pickup/Powerup flashes", S_CHOICE | S_STRICT, OFF_CNTR_X, M_SPC,
      {"palette_changes"}, .strings_id = str_palette_changes},
@@ -3514,13 +3514,22 @@ static struct
     boolean pistolstart;
     boolean halfplayerdamage;
     boolean doubleammo;
-    boolean aggromonsters;    
+    boolean aggromonsters;
+    int helperdogs;
 } csmenu;
 
 const char *skill_strings[] = {
     "I'm too young to die", "Hey, not too rough", "Hurt me plenty",
     "Ultra-Violence", "NIGHTMARE!",
 };
+
+static void CsBarkSound(void)
+{
+    if (csmenu.helperdogs)
+    {
+        M_StartSound(sfx_dgact);
+    }
+}
 
 static void SelectSkillLevel(void);
 
@@ -3534,6 +3543,7 @@ static void StartGame(void)
     cshalfplayerdamage = csmenu.halfplayerdamage;
     csdoubleammo = csmenu.doubleammo;
     csaggromonsters = csmenu.aggromonsters;
+    cshelperdogs = csmenu.helperdogs;
 
     M_ChooseSkill(csmenu_skill);
     setup_active = false;
@@ -3541,8 +3551,11 @@ static void StartGame(void)
 
 static setup_menu_t customskill_settings1[] = {
     MI_GAP_Y(10),
-    {"Skill level", S_CHOICE, CNTR_X, M_SPC, {"csmenu_skill"},
-     .strings_id = str_skill, .action = SelectSkillLevel},
+    {"Skill level",
+          S_CHOICE, CNTR_X,
+          M_SPC, {"csmenu_skill"},
+          .strings_id = str_skill,
+          .action = SelectSkillLevel},
     {"Half damage", S_ONOFF, CNTR_X, M_SPC, {"csmenu.halfplayerdamage"}},
     {"Double ammo", S_ONOFF, CNTR_X, M_SPC, {"csmenu.doubleammo"}},
     {"Fast monsters", S_ONOFF, CNTR_X, M_SPC, {"csmenu.fastparm"}},
@@ -3552,6 +3565,11 @@ static setup_menu_t customskill_settings1[] = {
     {"No monsters", S_ONOFF, CNTR_X, M_SPC, {"csmenu.nomonsters"}},
     {"Co-op spawns", S_ONOFF, CNTR_X, M_SPC, {"csmenu.coopspawns"}},
     {"Pistol start", S_ONOFF, CNTR_X, M_SPC, {"csmenu.pistolstart"}},
+    {"Helper dogs",
+          S_MBF | S_THERMO | S_THRM_SIZE4 | S_ACTION,
+          CNTR_X, M_THRM_SPC,
+          {"csmenu.helperdogs"},
+          .action = CsBarkSound},
     MI_GAP,
     {"Start Game", S_CENTER, 0, M_SPC, .action = StartGame},
     MI_END
@@ -3623,7 +3641,7 @@ static void SelectDone(setup_menu_t *ptr)
 {
     ptr->m_flags &= ~S_SELECT;
     ptr->m_flags |= S_HILITE;
-    M_StartSound(sfx_itemup);
+    M_StartSound(sfx_mnusel);
     setup_select = false;
     if (print_warning_about_changes) // killough 8/15/98
     {
@@ -4027,7 +4045,7 @@ boolean MN_SetupCursorPostion(int x, int y)
                 if (highlight_tab != i)
                 {
                     highlight_tab = i;
-                    M_StartSound(sfx_itemup);
+                    M_StartSound(sfx_mnusel);
                 }
             }
         }
@@ -4061,7 +4079,7 @@ boolean MN_SetupCursorPostion(int x, int y)
             {
                 print_warning_about_changes = false;
                 highlight_item = i;
-                M_StartSound(sfx_itemup);
+                M_StartSound(sfx_mnusel);
             }
         }
     }
@@ -4122,7 +4140,7 @@ static void Choice(menu_action_t action)
 
         if (*def->location.i != value)
         {
-            M_StartSound(sfx_stnmov);
+            M_StartSound(sfx_mnusli);
         }
         *def->location.i = value;
 
@@ -4153,7 +4171,7 @@ static void Choice(menu_action_t action)
 
         if (*def->location.i != value)
         {
-            M_StartSound(sfx_stnmov);
+            M_StartSound(sfx_mnusli);
         }
         *def->location.i = value;
 
@@ -4421,7 +4439,7 @@ static boolean NextPage(int inc)
         current_menu[set_item_on].m_flags |= S_HILITE;
     }
 
-    M_StartSound(sfx_pstop); // killough 10/98
+    M_StartSound(sfx_mnumov); // killough 10/98
     return true;
 }
 
@@ -4458,7 +4476,7 @@ boolean MN_SetupResponder(menu_action_t action, int ch)
     {
         if (ItemDisabled(current_item->m_flags))
         {
-            M_StartSound(sfx_oof);
+            M_StartSound(sfx_mnuerr);
             return true;
         }
         else if (current_item->action)
@@ -4466,7 +4484,7 @@ boolean MN_SetupResponder(menu_action_t action, int ch)
             current_item->action();
         }
 
-        M_StartSound(sfx_pistol);
+        M_StartSound(sfx_mnuact);
         return true;
     }
 
@@ -4625,7 +4643,7 @@ boolean MN_SetupResponder(menu_action_t action, int ch)
 
         if (ItemDisabled(flags))
         {
-            M_StartSound(sfx_oof);
+            M_StartSound(sfx_mnuerr);
             return true;
         }
         else if (flags & S_NUM)
@@ -4641,7 +4659,7 @@ boolean MN_SetupResponder(menu_action_t action, int ch)
 
         current_item->m_flags |= S_SELECT;
         setup_select = true;
-        M_StartSound(sfx_itemup);
+        M_StartSound(sfx_mnusel);
         return true;
     }
 
@@ -4683,7 +4701,7 @@ boolean MN_SetupResponder(menu_action_t action, int ch)
         default_verify = false;              // phares 4/19/98
         print_warning_about_changes = false; // [FG] reset
         active_thermo = NULL;
-        M_StartSound(sfx_swtchx);
+        M_StartSound(sfx_mnucls);
         return true;
     }
 
@@ -4728,7 +4746,7 @@ static boolean SetupTab(void)
         ;
     set_item_on--;
 
-    M_StartSound(sfx_pstop);
+    M_StartSound(sfx_mnumov);
     return true;
 }
 
@@ -4844,7 +4862,7 @@ boolean MN_SetupMouseResponder(int x, int y)
             {
                 active_thermo->action();
             }
-            M_StartSound(sfx_stnmov);
+            M_StartSound(sfx_mnusli);
         }
         return true;
     }
@@ -4857,7 +4875,7 @@ boolean MN_SetupMouseResponder(int x, int y)
     if (flags & S_ONOFF) // yes or no setting?
     {
         OnOff();
-        M_StartSound(sfx_itemup);
+        M_StartSound(sfx_mnusel);
         return true;
     }
 
@@ -4877,7 +4895,7 @@ boolean MN_SetupMouseResponder(int x, int y)
 
         if (*def->location.i != value)
         {
-            M_StartSound(sfx_stnmov);
+            M_StartSound(sfx_mnusli);
         }
         *def->location.i = value;
 
@@ -5036,7 +5054,7 @@ static const char **selectstrings[] = {
     [str_death_use_action] = death_use_action_strings,
     [str_widescreen] = widescreen_strings,
     [str_bobbing_pct] = bobbing_pct_strings,
-    [str_screen_melt] = screen_melt_strings,
+    [str_screen_wipe] = screen_wipe_strings,
     [str_palette_changes] = palette_changes_strings,
     [str_invul_mode] = invul_mode_strings,
     [str_skill] = skill_strings,
@@ -5158,5 +5176,6 @@ void MN_BindMenuVariables(void)
     BIND_BOOL_MENU(csmenu.doubleammo);
     BIND_BOOL_MENU(csmenu.halfplayerdamage);
     BIND_BOOL_MENU(csmenu.aggromonsters);
+    BIND_NUM_MENU(csmenu.helperdogs, 0, 3);
     BIND_NUM_MENU(freelook_mode, FREELOOK_OFF, FREELOOK_DIRECT_AIM);
 }
