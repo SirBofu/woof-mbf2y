@@ -59,6 +59,7 @@ static const char *comp_names[] = {
     [comp_reservedlineflag] = "comp_reservedlineflag",
     // mbf2y
     [comp_noelastic] = "comp_noelastic",
+    [comp_friendlyfix] = "comp_friendlyfix",
 };
 
 typedef byte md5_digest_t[16];

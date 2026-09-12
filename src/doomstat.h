@@ -171,6 +171,7 @@ enum {
   // mbf2y
 
   comp_noelastic,
+  comp_friendlyfix,
 
   MBF2Y_COMP_TOTAL,
 

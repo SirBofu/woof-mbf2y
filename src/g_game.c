@@ -4112,6 +4112,7 @@ static void G_MBF21Defaults(void)
   comp[comp_voodooscroller] = 0;
   comp[comp_reservedlineflag] = 1;
   comp[comp_noelastic] = 0;
+  comp[comp_friendlyfix] = 0;
 }
 
 static void G_MBF2YDefaults(void)
@@ -4127,6 +4128,7 @@ static void G_MBF2YDefaults(void)
   comp[comp_voodooscroller] = 0;
   comp[comp_reservedlineflag] = 1;
   comp[comp_noelastic] = 1;
+  comp[comp_friendlyfix] = 1;
 }
 
 static void G_MBFComp()
@@ -4138,6 +4140,7 @@ static void G_MBFComp()
   comp[comp_voodooscroller] = 1;
   comp[comp_reservedlineflag] = 0;
   comp[comp_noelastic] = 0;
+  comp[comp_friendlyfix] = 0;
 }
 
 static void G_BoomComp()
@@ -4158,6 +4161,7 @@ static void G_BoomComp()
   comp[comp_voodooscroller] = 0;
   comp[comp_reservedlineflag] = 0;
   comp[comp_noelastic] = 0;
+  comp[comp_friendlyfix] = 0;
 }
 
 static void CheckDemoParams(boolean specified_complevel)
@@ -5026,6 +5030,8 @@ static void ReadOptionsJSON(json_t *root)
     comp[comp_friendlyspawn] = JS_GetIntegerValue(root, "comp_friendlyspawn");
     comp[comp_voodooscroller] = JS_GetIntegerValue(root, "comp_voodooscroller");
     comp[comp_reservedlineflag] = JS_GetIntegerValue(root, "comp_reservedlineflag");
+    comp[comp_noelastic] = JS_GetIntegerValue(root, "comp_noelastic");
+    comp[comp_friendlyfix] = JS_GetIntegerValue(root, "comp_friendlyfix");
 }
 
 void G_BeginRecording(void)
@@ -5590,6 +5596,7 @@ void G_BindCompVariables(void)
   BIND_COMP(comp_voodooscroller, 0, "Voodoo dolls on slow scrollers move too slowly");
   BIND_COMP(comp_reservedlineflag, 1, "ML_RESERVED clears extended flags");
   BIND_COMP(comp_noelastic, 0, "Disable elastic collisions for players");
+  BIND_COMP(comp_friendlyfix, 0, "Use original targeting logic for friendly actors");
 
 #define BIND_EMU(id, v, help) \
   M_BindBool(#id, &overflow[(id)].enabled, NULL, (v), ss_none, wad_no, help)
