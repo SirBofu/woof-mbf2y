@@ -2232,7 +2232,7 @@ void MN_DrawEnemy(void)
 // killough 10/10/98
 
 static const char *default_complevel_strings[] = {
-    "Vanilla", "Boom", "MBF", "MBF21"
+    "Vanilla", "Boom", "MBF", "MBF21", "MBF2Y"
 };
 
 static void UpdateInterceptsEmuItem(void);

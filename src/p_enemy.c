@@ -1243,7 +1243,7 @@ void A_Chase(mobj_t *actor)
 	    // If current target is bad and a new one is found, return:
 
 	    if (!(actor->target && actor->target->health > 0 &&
-		  ((comp[comp_pursuit] && !netgame) || 
+		  (((comp[comp_pursuit] && !(comp[comp_friendlyfix] && (actor->flags & MF_FRIEND))) && !netgame) ||
 		   (((actor->target->flags ^ actor->flags) & MF_FRIEND ||
 		     (!(actor->flags & MF_FRIEND) && monster_infighting)) &&
 		    P_CheckSight(actor, actor->target)))) &&

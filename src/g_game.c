@@ -4117,30 +4117,22 @@ static void G_MBF21Defaults(void)
 
 static void G_MBF2YDefaults(void)
 {
-  G_MBFDefaults();
+  G_MBF21Defaults();
 
-  comp[comp_pursuit] = 1;
-
-  comp[comp_respawn] = 0;
-  comp[comp_soul] = 0;
-  comp[comp_ledgeblock] = 1;
-  comp[comp_friendlyspawn] = 1;
-  comp[comp_voodooscroller] = 0;
-  comp[comp_reservedlineflag] = 1;
   comp[comp_noelastic] = 1;
   comp[comp_friendlyfix] = 1;
 }
 
 static void G_MBFComp()
 {
+  comp[comp_pursuit] = 0;
+
   comp[comp_respawn] = 1;
   comp[comp_soul] = 1;
   comp[comp_ledgeblock] = 0;
   comp[comp_friendlyspawn] = 1;
   comp[comp_voodooscroller] = 1;
   comp[comp_reservedlineflag] = 0;
-  comp[comp_noelastic] = 0;
-  comp[comp_friendlyfix] = 0;
 }
 
 static void G_BoomComp()
@@ -4307,7 +4299,7 @@ void G_ReloadDefaults(boolean keep_demover)
       if (demover == DV_NONE)
       {
         I_Error("Invalid parameter '%s' for -complevel, "
-                "valid values are vanilla, boom, mbf, mbf21.", myargv[p + 1]);
+                "valid values are vanilla, boom, mbf, mbf21, mbf27.", myargv[p + 1]);
       }
     }
 
@@ -4343,10 +4335,10 @@ void G_ReloadDefaults(boolean keep_demover)
   {
     if (demo_version == DV_MBF)
       G_MBFDefaults();
-    else if (mbf21)
-      G_MBF21Defaults();
     else if (mbf2y)
       G_MBF2YDefaults();
+    else if (mbf21)
+      G_MBF21Defaults();
   }
 
   D_SetMaxHealth();
@@ -4355,7 +4347,7 @@ void G_ReloadDefaults(boolean keep_demover)
 
   R_InvulMode();
 
-  if (!mbf21 && !mbf2y)
+  if (!mbf21)
   {
     // Set new compatibility options
     G_MBFComp();
@@ -4407,7 +4399,7 @@ void G_ReloadDefaults(boolean keep_demover)
       G_BoomComp();
     }
   }
-  else if (mbf21 || mbf2y)
+  else if (mbf21)
   {
     // These are not configurable
     variable_friction = 1;
@@ -4808,7 +4800,9 @@ static json_mut_t *WriteOptionsJSON(json_mut_doc_t *doc)
     JS_SetInt(doc, obj, "comp_friendlyspawn", comp[comp_friendlyspawn]);
     JS_SetInt(doc, obj, "comp_voodooscroller", comp[comp_voodooscroller]);
     JS_SetInt(doc, obj, "comp_reservedlineflag", comp[comp_reservedlineflag]);
-
+    // mbf2y
+    JS_SetInt(doc, obj, "comp_noelastic", comp[comp_noelastic]);
+    JS_SetInt(doc, obj, "comp_friendlyfix", comp[comp_friendlyfix]);
     return obj;
 }
 
@@ -4863,16 +4857,20 @@ byte *G_ReadOptionsMBF21(byte *demo_p)
     comp[i] = *demo_p++;
 
   // comp_voodooscroller
-  if (count < MBF2Y_COMP_TOTAL - 3)
+  if (count < MBF2Y_COMP_TOTAL - 4)
     comp[comp_voodooscroller] = 1;
 
   // comp_reservedlineflag
-  if (count < MBF2Y_COMP_TOTAL - 2)
+  if (count < MBF2Y_COMP_TOTAL - 3)
     comp[comp_reservedlineflag] = 0;
 
-  // comp_norelastic
-  if (count < MBF2Y_COMP_TOTAL -1)
+  // comp_noelastic
+  if (count < MBF2Y_COMP_TOTAL - 2)
     comp[comp_noelastic] = 0;
+
+  // comp_friendlyfix
+  if (count < MBF2Y_COMP_TOTAL - 1)
+    comp[comp_friendlyfix] = 0;
 
   return demo_p;
 }
@@ -5595,8 +5593,8 @@ void G_BindCompVariables(void)
   BIND_COMP(comp_friendlyspawn, 1, "Things spawned by A_Spawn inherit friendliness of spawner");
   BIND_COMP(comp_voodooscroller, 0, "Voodoo dolls on slow scrollers move too slowly");
   BIND_COMP(comp_reservedlineflag, 1, "ML_RESERVED clears extended flags");
-  BIND_COMP(comp_noelastic, 0, "Disable elastic collisions for players");
-  BIND_COMP(comp_friendlyfix, 0, "Use original targeting logic for friendly actors");
+  BIND_COMP(comp_noelastic, 1, "Disable elastic collisions for players");
+  BIND_COMP(comp_friendlyfix, 1, "Use original targeting logic for friendly actors");
 
 #define BIND_EMU(id, v, help) \
   M_BindBool(#id, &overflow[(id)].enabled, NULL, (v), ss_none, wad_no, help)
